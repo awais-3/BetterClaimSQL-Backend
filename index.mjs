@@ -88,10 +88,10 @@ app.get("*", (req, res, next) => {
 // Start the server
 const server = http.createServer(app);
 
-server.listen(PORT, async () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log("Firebase integration and routers initialized successfully.");
-});
+// server.listen(PORT, async () => {
+//   console.log(`Server running on port ${PORT}`);
+//   console.log("Firebase integration and routers initialized successfully.");
+// });
 
 export { keypair }; // Exporting the keypair for compatibility with other modules if needed
 
