@@ -20,34 +20,36 @@ console.log("SOLANA_KEYPAIR from index.mjs:", process.env.SOLANA_KEYPAIR);
 let keypair;
 
 try {
-    const secretKeyString = process.env.SOLANA_KEYPAIR;
-    if (!secretKeyString) {
-        throw new Error("SOLANA_KEYPAIR is not defined in .env");
+  const secretKeyString = process.env.SOLANA_KEYPAIR;
+  if (!secretKeyString) {
+    throw new Error("SOLANA_KEYPAIR is not defined in .env");
+  }
+
+  let secretKeyArray;
+
+  if (secretKeyString.startsWith("[") || secretKeyString.startsWith("{")) {
+    console.log("Parsing SOLANA_KEYPAIR as JSON array...");
+    secretKeyArray = JSON.parse(secretKeyString);
+
+    if (!Array.isArray(secretKeyArray)) {
+      throw new Error("SOLANA_KEYPAIR must be an array.");
     }
+  } else {
+    console.log("Decoding SOLANA_KEYPAIR as Base58 string...");
+    secretKeyArray = bs58.decode(secretKeyString);
+  }
 
-    let secretKeyArray;
+  if (secretKeyArray.length !== 64) {
+    throw new Error("Invalid secret key size. Must be 64 bytes.");
+  }
 
-    if (secretKeyString.startsWith("[") || secretKeyString.startsWith("{")) {
-        console.log("Parsing SOLANA_KEYPAIR as JSON array...");
-        secretKeyArray = JSON.parse(secretKeyString);
-
-        if (!Array.isArray(secretKeyArray)) {
-            throw new Error("SOLANA_KEYPAIR must be an array.");
-        }
-    } else {
-        console.log("Decoding SOLANA_KEYPAIR as Base58 string...");
-        secretKeyArray = bs58.decode(secretKeyString);
-    }
-
-    if (secretKeyArray.length !== 64) {
-        throw new Error("Invalid secret key size. Must be 64 bytes.");
-    }
-
-    keypair = Keypair.fromSecretKey(Uint8Array.from(secretKeyArray));
-    console.log("Parsed SOLANA_KEYPAIR:", keypair.publicKey.toBase58());
+  keypair = Keypair.fromSecretKey(Uint8Array.from(secretKeyArray));
+  console.log("Parsed SOLANA_KEYPAIR:", keypair.publicKey.toBase58());
 } catch (err) {
-    console.error("Error parsing SOLANA_KEYPAIR:", err.message);
-    throw new Error("SOLANA_KEYPAIR is not valid. Ensure it is a Base58 string or JSON array.");
+  console.error("Error parsing SOLANA_KEYPAIR:", err.message);
+  throw new Error(
+    "SOLANA_KEYPAIR is not valid. Ensure it is a Base58 string or JSON array."
+  );
 }
 
 const __filename = fileURLToPath(import.meta.url);
@@ -69,26 +71,30 @@ app.use("/api/accounts", accountsRouter);
 
 // Handle React routing, return all requests to React app except for images and privacy-policy
 app.get("/privacy-policy", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "privacy-policy.html"));
+  res.sendFile(path.join(__dirname, "public", "privacy-policy.html"));
 });
 
 app.get("*", (req, res, next) => {
-    if (req.path.startsWith("/api/")) {
-        return next(); // Skip static file handling for API requests
-    }
-    if (req.path.startsWith("/images/")) {
-        res.sendFile(path.join(__dirname, "public", req.path));
-    } else {
-        res.sendFile(path.join(__dirname, "public", "index.html"));
-    }
+  if (req.path.startsWith("/api/")) {
+    return next(); // Skip static file handling for API requests
+  }
+  if (req.path.startsWith("/images/")) {
+    res.sendFile(path.join(__dirname, "public", req.path));
+  } else {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+  }
 });
 
 // Start the server
 const server = http.createServer(app);
 
 server.listen(PORT, async () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log("Firebase integration and routers initialized successfully.");
+  console.log(`Server running on port ${PORT}`);
+  console.log("Firebase integration and routers initialized successfully.");
 });
 
 export { keypair }; // Exporting the keypair for compatibility with other modules if needed
+
+export default (req, res) => {
+  console.log(req, res, "get called");
+};
