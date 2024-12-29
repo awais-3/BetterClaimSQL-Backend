@@ -95,4 +95,4 @@ server.listen(PORT, async () => {
 
 export { keypair }; // Exporting the keypair for compatibility with other modules if needed
 
-export default app;
+export default server;
