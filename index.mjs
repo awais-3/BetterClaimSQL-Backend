@@ -95,6 +95,4 @@ server.listen(PORT, async () => {
 
 export { keypair }; // Exporting the keypair for compatibility with other modules if needed
 
-export default (req, res) => {
-  console.log(req, res, "get called");
-};
+export default app;
